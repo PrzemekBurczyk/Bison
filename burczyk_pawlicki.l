@@ -21,18 +21,11 @@ char cls_brk_err[96] = "Closing curly bracket doesn't have a corresponding openi
 %}
 
 %%
-<<<<<<< HEAD
-[0-9]+ { yylval = yytext;  return(NUM); }
-[a-zA-Z_][a-zA-Z0-9_]* { yylval = yytext; return(id); }
-{_TYPE} { yylval = yytext; return(TYPE);  }
-{_TYPE_WITH_ID} { yylval = yytext; return(TYPE_WITH_ID); }
-=======
 
 [0-9]+ { yylval = *strdup(yytext);  return(NUM); }
 {TYPE_E} { yylval = *strdup(yytext); return(TYPE); }
 {TYPE_WITH_ID_E} { yylval = *strdup(yytext); return(TYPE_WITH_ID); }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval = *strdup(yytext); return(id); }
->>>>>>> huj
 "{" { ++block_cnt; yymore(); BEGIN(IN_BLOCK); }
 "}" { yyerror(cls_brk_err); }
 <IN_BLOCK>"}" {
@@ -48,10 +41,5 @@ char cls_brk_err[96] = "Closing curly bracket doesn't have a corresponding openi
 <IN_BLOCK>{COMMENT_LINE} { yymore(); }
 <IN_BLOCK>.|\n { yymore(); }
 [ \t]+  /* eat up whitespaces */
-<<<<<<< HEAD
-.|\n { yyerror("Unrecognised symbol"); }
-=======
 .|\n { return(yytext[0]); }
 
-%%
->>>>>>> huj
