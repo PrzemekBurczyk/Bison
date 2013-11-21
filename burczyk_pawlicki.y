@@ -23,7 +23,7 @@ char* _pchar;
     
 /*int fun(int a, int b - lista parametrów)*/
 
-functions: function functions {printf("1\n");}
+functions: function functions {printf("[1 %s %s]\n", $1, $2);}
          | function {printf("2\n");}
          ;
 function: decl_specifier declarator function_rest {printf("3\n");}
@@ -32,7 +32,7 @@ function: decl_specifier declarator function_rest {printf("3\n");}
 function_rest: declaration_list body {printf("5\n");}
              | body {printf("6\n");}
              ;
-decl_specifier: TYPE {printf("7\n");}
+decl_specifier: TYPE {printf("[7 %s]\n", $1);}
               | TYPE_WITH_ID id {printf("8\n");}
               ;
 declaration_list: declaration declaration_list {printf("9\n");}
@@ -48,21 +48,21 @@ declarator_rest: ',' declarator declarator_rest {printf("15\n");}
                | ',' declarator {printf("16\n");}
                ;
 declarator: pointer direct_declarator {printf("17\n");}
-          | direct_declarator {printf("18\n");}
+          | direct_declarator {printf("[18 %s]\n", $1);}
           ;
-direct_declarator: id {printf("19\n");}
+direct_declarator: id {printf("[19 %s]\n", $1);}
                   | '(' declarator ')' {printf("20\n");}
                   | direct_declarator '[' NUM ']' {printf("21\n");}
                   | direct_declarator '[' ']' {printf("22\n");}
                   | direct_declarator '(' param_list ')' {printf("23\n");}
-                  | direct_declarator '(' identifier_list ')' {printf("24\n");}
+                  | direct_declarator '(' identifier_list ')' {printf("[24 %s ]\n", $1, $3);}
                   | direct_declarator '(' ')' {printf("25\n");}
                   ;
-identifier_list: id identifier_rest {printf("26\n");}
+identifier_list: id identifier_rest {printf("[26 %s %s]\n", $1, $2);}
                | id {printf("27\n");}
                ;
-identifier_rest: ',' id identifier_rest {printf("28\n");}
-               | ',' id  {printf("29\n");}
+identifier_rest: ',' id identifier_rest {printf("[28 %s %s]\n", $2, $3);}
+               | ',' id  {printf("[29 %s]\n", $2);}
                ;
 param_list: param_declaration param_rest {printf("30\n");}
           | param_declaration {printf("31\n");}

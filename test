@@ -3,3 +3,9 @@ int a,b,c;
 {
     /* body */ 
 }
+
+double min(a)
+int a;
+{
+    /* body2 */
+}
