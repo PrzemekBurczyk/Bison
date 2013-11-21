@@ -21,16 +21,6 @@ char cls_brk_err[80] = "Closing curly bracket doesn't have a corresponding openi
 
 
 %%
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-[0-9]+	{printf("[LEX1: %s]\n", yytext); yylval = *yytext;  return(NUM);}
-([a-z]+)|([A-Z]+)   {printf("[LEX2: %s]\n", yytext); yylval = *yytext; return(id);}
-[ \t]+  {printf("[LEX3]");}
-.|\n    {printf("[LEX4: %s]\n", yytext);  return(*yytext);}
-=======
->>>>>>> huj
-
 [0-9]+ { yylval = yytext;  return(NUM); }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval = yytext; return(id); }
 {_TYPE} { yylval = yytext; return(TYPE);  }
@@ -51,7 +41,4 @@ char cls_brk_err[80] = "Closing curly bracket doesn't have a corresponding openi
 <IN_BLOCK>.|\n { yymore(); }
 [ \t]+  /* eat up whitespaces */
 .|\n { yyerror("Unrecognised symbol"); }
-<<<<<<< HEAD
-=======
->>>>>>> Improved lexer and updated .gitcommit
->>>>>>> huj
+
