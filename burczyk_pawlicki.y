@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #define YYSTYPE char*
 %}
 
@@ -51,7 +52,7 @@ declarator: pointer direct_declarator {printf("17\n");}
           | direct_declarator {printf("[18 %s]\n", $1);}
           ;
 direct_declarator: id {printf("[19 %s]\n", $1);}
-                  | '(' declarator ')' {printf("20\n");}
+                  | '(' declarator ')' {printf("20\n"); $$ = $2;}
                   | direct_declarator '[' NUM ']' {printf("21\n");}
                   | direct_declarator '[' ']' {printf("22\n");}
                   | direct_declarator '(' param_list ')' {printf("23\n");}
@@ -61,8 +62,8 @@ direct_declarator: id {printf("[19 %s]\n", $1);}
 identifier_list: id identifier_rest {printf("[26 %s %s]\n", $1, $2);}
                | id {printf("27\n");}
                ;
-identifier_rest: ',' id identifier_rest {printf("[28 %s %s]\n", $2, $3);}
-               | ',' id  {printf("[29 %s]\n", $2);}
+identifier_rest: ',' id identifier_rest {printf("[28 %s %s]\n", $2, $3); $$ = $2;}
+               | ',' id  {printf("[29 %s %s]\n", $1, $2); /*$$ = $2;*/ $1 = strcat($2, $1);}
                ;
 param_list: param_declaration param_rest {printf("30\n");}
           | param_declaration {printf("31\n");}

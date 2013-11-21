@@ -4,11 +4,11 @@
 #include "burczyk_pawlicki.tab.h"
 %}
 
-TYPE_E                "void"|"char"|"short"|"int"|"long"|"float"
-TYPE_WITH_ID_E        "struct"|"enum"
-COMMENT_LINE        "//".*\n
-NOT_ASTERISK        [^*]|\n
-COMMENT_BLOCK        "/*"("*"*{NOT_ASTERISK}|"/")*"*"+"/"
+TYPE_E		"void"|"char"|"short"|"int"|"long"|"float"
+TYPE_WITH_ID_E	"struct"|"enum"
+COMMENT_LINE	"//".*\n
+NOT_ASTERISK	[^*]|\n
+COMMENT_BLOCK	"/*"("*"*{NOT_ASTERISK}|"/")*"*"+"/"
 
 %x IN_BLOCK IN_COMMENT_BLOCK IN_STRING
 
@@ -21,24 +21,17 @@ char cls_brk_err[96] = "Closing curly bracket doesn't have a corresponding openi
 %}
 
 %%
-<<<<<<< HEAD
-[0-9]+ { yylval = yytext;  return(NUM); }
-[a-zA-Z_][a-zA-Z0-9_]* { yylval = yytext; return(id); }
-{_TYPE} { yylval = yytext; return(TYPE);  }
-{_TYPE_WITH_ID} { yylval = yytext; return(TYPE_WITH_ID); }
-=======
 
-[0-9]+ { yylval = *strdup(yytext);  return(NUM); }
-{TYPE_E} { yylval = *strdup(yytext); return(TYPE); }
-{TYPE_WITH_ID_E} { yylval = *strdup(yytext); return(TYPE_WITH_ID); }
-[a-zA-Z_][a-zA-Z0-9_]* { yylval = *strdup(yytext); return(id); }
->>>>>>> huj
+[0-9]+ { yylval = strdup(yytext);  return(NUM); }
+{TYPE_E} { yylval = strdup(yytext); return(TYPE); }
+{TYPE_WITH_ID_E} { yylval = strdup(yytext); return(TYPE_WITH_ID); }
+[a-zA-Z_][a-zA-Z0-9_]* { yylval = strdup(yytext); return(id); }
 "{" { ++block_cnt; yymore(); BEGIN(IN_BLOCK); }
 "}" { yyerror(cls_brk_err); }
 <IN_BLOCK>"}" {
   yymore();
   if(--block_cnt == 0) {
-    yylval = *strdup(yytext);
+    yylval = strdup(yytext);
     return(body);
     BEGIN(INITIAL);
   }
@@ -48,10 +41,6 @@ char cls_brk_err[96] = "Closing curly bracket doesn't have a corresponding openi
 <IN_BLOCK>{COMMENT_LINE} { yymore(); }
 <IN_BLOCK>.|\n { yymore(); }
 [ \t]+  /* eat up whitespaces */
-<<<<<<< HEAD
-.|\n { yyerror("Unrecognised symbol"); }
-=======
 .|\n { return(yytext[0]); }
 
 %%
->>>>>>> huj
