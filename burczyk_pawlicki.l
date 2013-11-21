@@ -1,12 +1,12 @@
 %option noyywrap
 
 %{
-#include "burczyk.tab.h"
+#include "burczyk_pawlicki.tab.h"
 %}
 
 %%
-[0-9]+	{yylval = atoi(yytext);  return(NUM);}
+[0-9]+	{printf("LEX1: %s\n", yytext); yylval = *yytext;  return(NUM);}
 
-([a-z]+)|([A-Z]+)   {yylval = yytext; return(id);}
+([a-z]+)|([A-Z]+)   {printf("LEX2: %s\n", yytext); yylval = *yytext; return(id);}
 [ \t]+  /* eat up whitespaces */
-.|\n    return(*yytext);
+.|\n    {printf("LEX3: %s\n", yytext);  return(*yytext);}
