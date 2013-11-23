@@ -62,8 +62,8 @@ direct_declarator: id {printf("[19 %s]\n", $1);}
 identifier_list: id identifier_rest {printf("[26 %s %s]\n", $1, $2);}
                | id {printf("27\n");}
                ;
-identifier_rest: ',' id identifier_rest {printf("[28 %s %s]\n", $2, $3); $$ = $2;}
-               | ',' id  {printf("[29 %s %s]\n", $1, $2); /*$$ = $2;*/ $1 = strcat($2, $1);}
+identifier_rest: ',' id identifier_rest {printf("[28 %s %s]\n", $2, $3); $$ = $2; strcat($$, ","); strcat($$, $3);}
+               | ',' id  {printf("[29 %s %s]\n", $1, $2); strcat($$, ","); strcat($$, $2); printf("#%s\n", $$);}
                ;
 param_list: param_declaration param_rest {printf("30\n");}
           | param_declaration {printf("31\n");}

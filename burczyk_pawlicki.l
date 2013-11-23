@@ -43,4 +43,3 @@ char cls_brk_err[96] = "Closing curly bracket doesn't have a corresponding openi
 [ \t]+  /* eat up whitespaces */
 .|\n { return(yytext[0]); }
 
-%%
