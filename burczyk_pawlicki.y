@@ -10,6 +10,10 @@ char* specified_arguments[16];
 char** spec_arg_ptr;
 char* argument_types[16];
 char** arg_t_ptr;
+char* tmp[16];
+char** tmp_ptr;
+char* arg_type;
+int first_match = 1;
 int i,j;
 %}
 
@@ -61,10 +65,15 @@ function_rest: declaration_list body {
                     }
              ;
 decl_specifier: TYPE {
+                        reset_tmp();
+                        arg_type = strdup($1);
                         $$ = $1; 
                         printf("[7 %s]\n", $$);
                      }
               | TYPE_WITH_ID id {
+                                    reset_tmp();
+                                    arg_type = strdup($1);
+                                    strcat(arg_type, $2);
                                     $$ = $1; 
                                     strcat($$, " "); 
                                     strcat($$, $2); 
@@ -83,6 +92,11 @@ declaration_list: declaration declaration_list {
                               }
                 ;
 declaration: decl_specifier declarator_list ';' {
+                                                    for(i = 0; *tmp[i] != 0 && i < 16; i++){
+                                                        *spec_arg_ptr = strdup(tmp[i]);
+                                                        spec_arg_ptr++;
+                                                    }
+                                                    reset_tmp();
                                                     $$ = $1; 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
@@ -91,6 +105,11 @@ declaration: decl_specifier declarator_list ';' {
                                                     printf("[11 %s]\n", $$);
                                                 }
            | decl_specifier ';' {
+                                    for(i = 0; *tmp[i] != 0 && i < 16; i++){
+                                        *spec_arg_ptr = strdup(tmp[i]);
+                                        spec_arg_ptr++;
+                                    }
+                                    reset_tmp();
                                     $$ = $1; 
                                     strcat($$, " "); 
                                     strcat($$, ";");  
@@ -137,8 +156,13 @@ declarator: pointer direct_declarator {
                               }
           ;
 direct_declarator: id {
-                            *spec_arg_ptr = strdup($1);
-                            spec_arg_ptr++;
+                            if(first_match == 0){
+                                *arg_t_ptr = strdup(arg_type);
+                                arg_t_ptr++;
+                                *tmp_ptr = strdup($1);
+                                tmp_ptr++;
+                            }
+                            first_match = 0;
                             $$ = $1; 
                             printf("[19 %s]\n", $$);
                       }
@@ -263,12 +287,18 @@ param_rest: ',' param_declaration param_rest {
                                    }
           ;
 param_declaration: decl_specifier declarator {
+                                                for(i = 0; *tmp[i] != 0 && i < 16; i++){
+                                                    *spec_arg_ptr = strdup(tmp[i]);
+                                                    spec_arg_ptr++;
+                                                }
+                                                reset_tmp();
                                                 $$ = $1; 
                                                 strcat($$, " "); 
                                                 strcat($$, $2); 
                                                 printf("[34 %s]\n", $$);
                                              }
                   | decl_specifier abstract_declarator {
+                                                            //tu też kopiować kod z 34??
                                                             $$ = $1; 
                                                             strcat($$, " "); 
                                                             strcat($$, $2); 
@@ -387,10 +417,18 @@ pointer: '*' pointer {
        ; 
 %%
 
+int reset_tmp(){
+    for(i = 0; i < 16; i++){
+        tmp[i] = malloc(128);
+    }
+    tmp_ptr = tmp;
+}
+
 int initialize_arrays(){
     arg_ptr = arguments;
     arg_t_ptr = argument_types;
     spec_arg_ptr = specified_arguments;
+    arg_type = malloc(128);
     for(i = 0; i < 16; i++){
         arguments[i] = malloc(128);
         specified_arguments[i] = malloc(128);
@@ -399,10 +437,22 @@ int initialize_arrays(){
 }
 
 int print_arrays(){
-    printf("\nParametry funkcji:\n");
+    printf("\nZadeklarowane parametry funkcji:\n");
     for(i = 0; i < 16; i++){
         if(*arguments[i] != 0){
-            printf("%s %s %s\n", argument_types[i], arguments[i], specified_arguments[i]);
+            printf("%s\n", arguments[i]);
+        }
+    }
+    printf("\nWyspecyfikowane parametry funkcji:\n");
+    for(i = 0; i < 16; i++){
+        if(*specified_arguments[i] != 0){
+            printf("%s\n", specified_arguments[i]);
+        }
+    }
+    printf("\nWyspecyfikowane typy parametrów (kolejność jak w wyspecyfikowanych parametrach):\n");
+    for(i = 0; i < 16; i++){
+        if(*argument_types[i] != 0){
+            printf("%s\n", argument_types[i]);
         }
     }
     printf("\n");
