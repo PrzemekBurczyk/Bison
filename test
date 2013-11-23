@@ -1,11 +1,8 @@
-int max(a,b,c)
-int a,b,c;
-{
+void max(a,b,c,d,e) 
+int a,b,c; 
+char d;
+float e;
+{ 
     /* body */ 
 }
 
-double min(a)
-int a;
-{
-    /* body2 */
-}
