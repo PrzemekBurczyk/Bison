@@ -4,11 +4,13 @@
 #define YYSTYPE char*
 char* return_type;
 char* function_name;
-char* arguments[16];
+char* arguments[16];  //declared arguments
 char** arg_ptr;
+char* specified_arguments[16];
+char** spec_arg_ptr;
 char* argument_types[16];
 char** arg_t_ptr;
-int i;
+int i,j;
 %}
 
 %token NUM body id TYPE TYPE_WITH_ID
@@ -21,12 +23,15 @@ functions: function functions {
                                 strcat($$, $2); 
                                 printf("[1 %s]\n", $$);
                               }
-         | function { 
+         | function {   
                         $$ = $1; 
                         printf("[2 %s]\n", $$);
                     }
          ;
 function: decl_specifier declarator function_rest { 
+                                                    check_repetitions();
+                                                    print_arrays();
+                                                    initialize_arrays();
                                                     $$ = $1; 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
@@ -35,6 +40,9 @@ function: decl_specifier declarator function_rest {
                                                     printf("[3 %s]\n", $$);
                                                   }
         | declarator function_rest { 
+                                        check_repetitions();
+                                        print_arrays();
+                                        initialize_arrays();
                                         $$ = $1; 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
@@ -129,6 +137,8 @@ declarator: pointer direct_declarator {
                               }
           ;
 direct_declarator: id {
+                            *spec_arg_ptr = strdup($1);
+                            spec_arg_ptr++;
                             $$ = $1; 
                             printf("[19 %s]\n", $$);
                       }
@@ -377,20 +387,42 @@ pointer: '*' pointer {
        ; 
 %%
 
+int initialize_arrays(){
+    arg_ptr = arguments;
+    arg_t_ptr = argument_types;
+    spec_arg_ptr = specified_arguments;
+    for(i = 0; i < 16; i++){
+        arguments[i] = malloc(128);
+        specified_arguments[i] = malloc(128);
+        argument_types[i] = malloc(128);
+    }
+}
+
+int print_arrays(){
+    printf("\nParametry funkcji:\n");
+    for(i = 0; i < 16; i++){
+        if(*arguments[i] != 0){
+            printf("%s %s %s\n", argument_types[i], arguments[i], specified_arguments[i]);
+        }
+    }
+    printf("\n");
+}
+
+int check_repetitions(){
+    for(i = 0; i < 16; i++){
+        for(j = i + 1; j < 16; j++){
+            if(*arguments[i] != 0 && *arguments[j] != 0 && strcmp(arguments[i], arguments[j]) == 0){
+                printf("\nNastapilo powtorzenie nazwy parametru funkcji: %s\n", arguments[i]);
+            }
+        }
+    }
+}
+
 int main()
 {
-  arg_ptr = arguments;
-  arg_t_ptr = argument_types;
-  for(i = 0; i < 16; i++){
-    arguments[i] = malloc(128);
-    argument_types[i] = malloc(128);
-  }
-  yyparse();
-  printf("\n");
-  for(i = 0; i < 16; i++){
-    printf("%s %s\n", argument_types[i], arguments[i]);
-  }
-  return 0;
+    initialize_arrays();
+    yyparse();
+    return 0;
 }
 
 int yyerror(char *s){
