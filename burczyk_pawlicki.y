@@ -2,28 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #define YYSTYPE char*
-char buffer[1024];
+char* return_type;
+char* function_name;
+char* arguments[16];
+char** arg_ptr;
+char* argument_types[16];
+char** arg_t_ptr;
+int i;
 %}
 
 %token NUM body id TYPE TYPE_WITH_ID
 
-/*%union {
-int _int;
-char* _pchar;
-}*/
-
-/*%token <_int> NUM 
-       <_pchar> body id TYPE TYPE_WITH_ID*/
-
-/*%type <_pchar> functions function function_rest decl_specifier declaration_list declaration declarator_list declarator_rest declarator direct_declarator identifier_list identifier_rest param_list param_rest param_declaration abstract_declarator direct_abstract_declarator pointer*/
-
 %%
-
-/*int - specyfikator typu fun(a, b, c - lista identyfikatorów) - deklarator
-    int a      -|
-    double b,c -|- lista deklaracji*/
-    
-/*int fun(int a, int b - lista parametrów)*/
 
 functions: function functions { 
                                 $$ = $1; 
@@ -199,6 +189,8 @@ direct_declarator: id {
                                               }
                   ;
 identifier_list: id identifier_rest {
+                                        *arg_ptr = strdup($1);
+                                        arg_ptr++;
                                         $$ = $1; 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
@@ -206,6 +198,8 @@ identifier_list: id identifier_rest {
                                     }
                | id {
                         $$ = $1; 
+                        *arg_ptr = strdup($1);
+                        arg_ptr++;
                         printf("[27 %s]\n", $$);
                     }
                ;
@@ -216,6 +210,8 @@ identifier_rest: ',' id identifier_rest {
                                             strcat($$, $2); 
                                             strcat($$, " "); 
                                             strcat($$, $3); 
+                                            *arg_ptr = strdup($2);
+                                            arg_ptr++;
                                             printf("[28 %s]\n", $$);
                                         }
                | ',' id  {
@@ -223,6 +219,8 @@ identifier_rest: ',' id identifier_rest {
                             strcat($$, ",");
                             strcat($$, " "); 
                             strcat($$, $2); 
+                            *arg_ptr = strdup($2);
+                            arg_ptr++;
                             printf("[29 %s]\n", $$);
                          }
                ;
@@ -381,7 +379,17 @@ pointer: '*' pointer {
 
 int main()
 {
+  arg_ptr = arguments;
+  arg_t_ptr = argument_types;
+  for(i = 0; i < 16; i++){
+    arguments[i] = malloc(128);
+    argument_types[i] = malloc(128);
+  }
   yyparse();
+  printf("\n");
+  for(i = 0; i < 16; i++){
+    printf("%s %s\n", argument_types[i], arguments[i]);
+  }
   return 0;
 }
 
