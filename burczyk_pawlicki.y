@@ -12,6 +12,8 @@ char** spec_arg_ptr;
 char* argument_types[16];
 char* full_argument_definitions[16];
 char** full_arg_def_ptr;
+char* tmp2[16];
+char** tmp2_ptr;
 char** arg_t_ptr;
 char* tmp[16];
 char** tmp_ptr;
@@ -67,6 +69,7 @@ function: decl_specifier declarator function_rest {
                                         strcat($$, $2); 
                                         printf("[4 %s]\n", $$);
                                    }
+        | error ';' {yyerrok;}
         ;
 function_rest: declaration_list body {
                                         $$ = malloc(SIZE); 
@@ -87,6 +90,7 @@ decl_specifier: TYPE {
                             strcat(return_type, $1);
                         }
                         reset_tmp();
+                        reset_tmp2();
                         *arg_type = 0;
                         strcat(arg_type, $1);
                         $$ = malloc(SIZE); 
@@ -101,6 +105,7 @@ decl_specifier: TYPE {
                                         strcat(return_type, $2);
                                     }
                                     reset_tmp();
+                                    reset_tmp2();
                                     *arg_type = 0;
                                     strcat(arg_type, $1);
                                     strcat(arg_type, " ");
@@ -131,6 +136,11 @@ declaration: decl_specifier declarator_list ';' {
                                                         spec_arg_ptr++;
                                                     }
                                                     reset_tmp();
+                                                    for(i = 0; *tmp2[i] != 0 && i < 16; i++){
+                                                        *full_arg_def_ptr = strdup(tmp2[i]);
+                                                        full_arg_def_ptr++;
+                                                    }
+                                                    reset_tmp2();
                                                     $$ = malloc(SIZE); 
 	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
@@ -145,6 +155,11 @@ declaration: decl_specifier declarator_list ';' {
                                         spec_arg_ptr++;
                                     }
                                     reset_tmp();
+                                    for(i = 0; *tmp2[i] != 0 && i < 16; i++){
+                                        *full_arg_def_ptr = strdup(tmp2[i]);
+                                        full_arg_def_ptr++;
+                                    }
+                                    reset_tmp2();
                                     $$ = malloc(SIZE); 
 	                                strcat($$, $1); 
                                     strcat($$, " "); 
@@ -183,9 +198,9 @@ declarator_rest: ',' declarator declarator_rest {
                                 }
                ;
 declarator: pointer direct_declarator {
-                                            strcat(*full_arg_def_ptr, "*");
-                                            strcat(*full_arg_def_ptr, $2);
-                                            full_arg_def_ptr++;
+                                            strcat(*tmp2_ptr, "*");
+                                            strcat(*tmp2_ptr, $2);
+                                            tmp2_ptr++;
                                             $$ = malloc(SIZE); 
 	                                        strcat($$, $1); 
                                             strcat($$, " "); 
@@ -193,8 +208,8 @@ declarator: pointer direct_declarator {
                                             printf("[17 %s]\n", $$);
                                       }
           | direct_declarator {
-                                    strcat(*full_arg_def_ptr, $1);
-                                    full_arg_def_ptr++;
+                                    strcat(*tmp2_ptr, $1);
+                                    tmp2_ptr++;
                                     $$ = malloc(SIZE); 
 	                                strcat($$, $1); 
                                     printf("[18 %s]\n", $$);
@@ -354,6 +369,11 @@ param_declaration: decl_specifier declarator {
                                                     arg_ptr++;
                                                 }
                                                 reset_tmp();
+                                                for(i = 0; *tmp2[i] != 0 && i < 16; i++){
+                                                    *full_arg_def_ptr = strdup(tmp2[i]);
+                                                    full_arg_def_ptr++;
+                                                }
+                                                reset_tmp2();
                                                 $$ = malloc(SIZE); 
 	                                            strcat($$, $1); 
                                                 strcat($$, " "); 
@@ -494,6 +514,13 @@ int reset_tmp(){
         tmp[i] = malloc(SIZE);
     }
     tmp_ptr = tmp;
+}
+
+int reset_tmp2(){
+    for(i = 0; i < 16; i++){
+        tmp2[i] = malloc(SIZE);
+    }
+    tmp2_ptr = tmp2;
 }
 
 int initialize_arrays(){
