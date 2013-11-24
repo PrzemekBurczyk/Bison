@@ -13,8 +13,6 @@ char* a, * c;
     /* body */
 }
 
-kutas
-
 int max(int a[], int b[], int c)
 {
     /* body */

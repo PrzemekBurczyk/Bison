@@ -19,7 +19,6 @@ char* tmp[16];
 char** tmp_ptr;
 char* arg_type;
 char* body_str;
-char* output;
 char* new_style_function;
 int first_match = 1;
 int i,j;
@@ -45,7 +44,7 @@ functions: function functions {
 	                    strcat($$, $1); 
                         /* printf("[2 %s]\n", $$); */
                     }
-         | error functions { yyerrok;  }
+         
          ;
 function: decl_specifier declarator function_rest { 
                                                     /*
@@ -56,14 +55,14 @@ function: decl_specifier declarator function_rest {
                                                     print_arrays();
                                                     */
                                                     $$ = malloc(SIZE); 
-	                                            strcat($$, $1); 
+	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
                                                     strcat($$, " "); 
                                                     strcat($$, $3); 
-                                                    printf("[3 %s]\n", $$);
+                                                    //printf("[3 %s]\n", $$);
                                                     if(new_style == 1){
-                                                        print_output($$);
+                                                        print_output_original(strdup($$));
                                                     } else {
                                                         print_output();
                                                     }
@@ -81,9 +80,9 @@ function: decl_specifier declarator function_rest {
 	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
-                                        printf("[4 %s]\n", $$);
+                                        //printf("[4 %s]\n", $$);
                                         if(new_style == 1){
-                                            print_output($$);
+                                            print_output_original(strdup($$));
                                         } else {
                                             print_output();
                                         }
@@ -154,12 +153,16 @@ declaration_list: declaration declaration_list {
                 ;
 declaration: decl_specifier declarator_list ';' {
                                                     for(i = 0; *tmp[i] != 0 && i < 16; i++){
-                                                        *spec_arg_ptr = strdup(tmp[i]);
+                                                        //*spec_arg_ptr = strdup(tmp[i]);
+                                                        *spec_arg_ptr = malloc(SIZE);
+                                                        strcat(*spec_arg_ptr, tmp[i]);
                                                         spec_arg_ptr++;
                                                     }
                                                     reset_tmp();
                                                     for(i = 0; *tmp2[i] != 0 && i < 16; i++){
-                                                        *full_arg_def_ptr = strdup(tmp2[i]);
+                                                        //*full_arg_def_ptr = strdup(tmp2[i]);
+                                                        *full_arg_def_ptr = malloc(SIZE);
+                                                        strcat(*full_arg_def_ptr, tmp2[i]);
                                                         full_arg_def_ptr++;
                                                     }
                                                     reset_tmp2();
@@ -173,12 +176,16 @@ declaration: decl_specifier declarator_list ';' {
                                                 }
            | decl_specifier ';' {
                                     for(i = 0; *tmp[i] != 0 && i < 16; i++){
-                                        *spec_arg_ptr = strdup(tmp[i]);
+                                        //*spec_arg_ptr = strdup(tmp[i]);
+                                        *spec_arg_ptr = malloc(SIZE);
+                                        strcat(*spec_arg_ptr, tmp[i]);
                                         spec_arg_ptr++;
                                     }
                                     reset_tmp();
                                     for(i = 0; *tmp2[i] != 0 && i < 16; i++){
-                                        *full_arg_def_ptr = strdup(tmp2[i]);
+                                        //*full_arg_def_ptr = strdup(tmp2[i]);
+                                        *full_arg_def_ptr = malloc(SIZE);
+                                        strcat(*full_arg_def_ptr, tmp2[i]);
                                         full_arg_def_ptr++;
                                     }
                                     reset_tmp2();
@@ -239,12 +246,18 @@ declarator: pointer direct_declarator {
           ;
 direct_declarator: id {
                             if(first_match == 0){
-                                *arg_t_ptr = strdup(arg_type);
+                                //*arg_t_ptr = strdup(arg_type);
+                                *arg_t_ptr = malloc(SIZE);
+                                strcat(*arg_t_ptr, arg_type);
                                 arg_t_ptr++;
-                                *tmp_ptr = strdup($1);
+                                //*tmp_ptr = strdup($1);
+                                *tmp_ptr = malloc(SIZE);
+                                strcat(*tmp_ptr, $1);
                                 tmp_ptr++;
                             } else {
-                                function_name = strdup($1);
+                                //function_name = strdup($1);
+                                function_name = malloc(SIZE);
+                                strcat(function_name, $1);
                             }
                             first_match = 0;
                             $$ = malloc(SIZE); 
@@ -259,7 +272,9 @@ direct_declarator: id {
                                             strcat($$, " "); 
                                             strcat($$, ")"); 
                                             /* printf("[20 %s]\n", $$); */
-                                            function_name = strdup($$);
+                                            //function_name = strdup($$);
+                                            function_name = malloc(SIZE);
+                                            strcat(function_name, $$);
                                        }
                   | direct_declarator '[' NUM ']' {
                                                         $$ = malloc(SIZE); 
@@ -317,7 +332,9 @@ direct_declarator: id {
                                               }
                   ;
 identifier_list: id identifier_rest {
-                                        *arg_ptr = strdup($1);
+                                        //*arg_ptr = strdup($1);
+                                        *arg_ptr = malloc(SIZE);
+                                        strcat(*arg_ptr, $1);
                                         arg_ptr++;
                                         $$ = malloc(SIZE); 
 	                                    strcat($$, $1); 
@@ -328,7 +345,9 @@ identifier_list: id identifier_rest {
                | id {
                         $$ = malloc(SIZE); 
 	                    strcat($$, $1); 
-                        *arg_ptr = strdup($1);
+                        //*arg_ptr = strdup($1);
+                        *arg_ptr = malloc(SIZE);
+                        strcat(*arg_ptr, $1);
                         arg_ptr++;
                         /* printf("[27 %s]\n", $$); */
                     }
@@ -340,7 +359,9 @@ identifier_rest: ',' id identifier_rest {
                                             strcat($$, $2); 
                                             strcat($$, " "); 
                                             strcat($$, $3); 
-                                            *arg_ptr = strdup($2);
+                                            //*arg_ptr = strdup($2);
+                                            *arg_ptr = malloc(SIZE);
+                                            strcat(*arg_ptr, $2);
                                             arg_ptr++;
                                             /* printf("[28 %s]\n", $$); */
                                         }
@@ -349,7 +370,9 @@ identifier_rest: ',' id identifier_rest {
                             strcat($$, ",");
                             strcat($$, " "); 
                             strcat($$, $2); 
-                            *arg_ptr = strdup($2);
+                            //*arg_ptr = strdup($2);
+                            *arg_ptr = malloc(SIZE);
+                            strcat(*arg_ptr, $2);
                             arg_ptr++;
                             /* printf("[29 %s]\n", $$); */
                          }
@@ -386,14 +409,20 @@ param_rest: ',' param_declaration param_rest {
           ;
 param_declaration: decl_specifier declarator {
                                                 for(i = 0; *tmp[i] != 0 && i < 16; i++){
-                                                    *spec_arg_ptr = strdup(tmp[i]);
+                                                    //*spec_arg_ptr = strdup(tmp[i]);
+                                                    *spec_arg_ptr = malloc(SIZE);
+                                                    strcat(*spec_arg_ptr, tmp[i]);
                                                     spec_arg_ptr++;
-                                                    *arg_ptr = strdup(tmp[i]);
+                                                    //*arg_ptr = strdup(tmp[i]);
+                                                    *arg_ptr = malloc(SIZE);
+                                                    strcat(*arg_ptr, tmp[i]);
                                                     arg_ptr++;
                                                 }
                                                 reset_tmp();
                                                 for(i = 0; *tmp2[i] != 0 && i < 16; i++){
-                                                    *full_arg_def_ptr = strdup(tmp2[i]);
+                                                    //*full_arg_def_ptr = strdup(tmp2[i]);
+                                                    *full_arg_def_ptr = malloc(SIZE);
+                                                    strcat(*full_arg_def_ptr, tmp2[i]);
                                                     full_arg_def_ptr++;
                                                 }
                                                 reset_tmp2();
@@ -546,30 +575,35 @@ int reset_tmp2(){
     tmp2_ptr = tmp2;
 }
 
-int print_output(char* new_style_function){
+int print_output_original(char* new_style_function){
     // printf("\n*****************\n");
     printf("\n");
     if(validate_arg_list_occurence() == 1 && check_repetitions(arguments) == 1 && check_repetitions(specified_arguments) == 1 && validate_declared_parameters() == 1 && validate_specified_parameters() == 1){
-        if(!new_style_function){
-            printf("%s %s(", return_type, function_name);
-            if(*full_argument_definitions[0] == 0){
-                printf("void");
-            }
-            for(i = 0; i < 16; i++){
-                if(*full_argument_definitions[i] != 0){
-                    if(i == 0){
-                        printf("%s %s", argument_types[i], full_argument_definitions[i]);
-                    } else {
-                        printf(", %s %s", argument_types[i], full_argument_definitions[i]);
-                    }
+        printf("%s\n", new_style_function);
+    }
+    // printf("\n*****************\n");
+}
+
+int print_output(){
+   // printf("\n*****************\n");
+    printf("\n");
+    if(validate_arg_list_occurence() == 1 && check_repetitions(arguments) == 1 && check_repetitions(specified_arguments) == 1 && validate_declared_parameters() == 1 && validate_specified_parameters() == 1){
+        printf("%s %s(", return_type, function_name);
+        if(*full_argument_definitions[0] == 0){
+            printf("void");
+        }
+        for(i = 0; i < 16; i++){
+            if(*full_argument_definitions[i] != 0){
+                if(i == 0){
+                    printf("%s %s", argument_types[i], full_argument_definitions[i]);
+                } else {
+                    printf(", %s %s", argument_types[i], full_argument_definitions[i]);
                 }
             }
-            printf(")\n");
-            printf("%s", body_str);
-            printf("\n");
-        } else {
-            printf("%s\n", new_style_function);
         }
+        printf(")\n");
+        printf("%s", body_str);
+        printf("\n");
     }
     // printf("\n*****************\n");
 }
