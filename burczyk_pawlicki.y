@@ -44,7 +44,7 @@ functions: function functions {
 	                    strcat($$, $1); 
                         /* printf("[2 %s]\n", $$); */
                     }
-         
+         | error functions {yyerrok;}
          ;
 function: decl_specifier declarator function_rest { 
                                                     /*
