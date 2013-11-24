@@ -17,8 +17,8 @@ BROKEN_STRING	\"([^\"\n]|\\\n)*\n
 
 extern int yylex(void);
 int block_cnt = 0;
-char cls_brk_err[128] = "Line %d: closing curly bracket doesn't have a corresponding opening one.";
-char broken_str_err[128] = "Line %d: string is not closed in the same line.";
+char cls_brk_err[128] = "Linia %d: nawias zamykajacy nie ma odpowiadajacego nawiasu otwierajacego.";
+char broken_str_err[128] = "Linia %d: string nie jest zakonczony w tej samej linii.";
 char err_buf[256] = "";
 %}
 
