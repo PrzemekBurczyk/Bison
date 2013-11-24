@@ -45,6 +45,7 @@ functions: function functions {
 	                    strcat($$, $1); 
                         printf("[2 %s]\n", $$);
                     }
+         | error functions {yyerrok;}
          ;
 function: decl_specifier declarator function_rest { 
                                                     check_repetitions(arguments);
@@ -578,6 +579,8 @@ int validate_arg_list_occurence(){
 }
 
 int initialize_arrays(){
+    reset_tmp();
+    reset_tmp2();
     old_style = 0;
     new_style = 0;
     first_match = 1;

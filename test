@@ -1,11 +1,10 @@
-void max(a, b, c, d, e)
+max(a, b, c, d, e)
 int b[][],c;
 char* d, a[];
 float e[][];
 {
     /* body */
 }
-
 
 struct ala (*(*f())[])(a, b, c)
 int b;
@@ -29,8 +28,6 @@ void max()
 }
 
 void func(int a, char b)
-int a;
-char b;
 {
-
+    /* body {{ ]}} */
 }
