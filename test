@@ -1,9 +1,12 @@
-
-void max(a,b,c,d,e) 
-int a[5],b,c; 
-char d;
-float e;
-{ 
-    /* body */ 
+void max(a, b, c, d, e)
+int b[][],c;
+char* d, a[];
+float e[][];
+{
+    /* body */
 }
 
+
+struct ala (*(*f())[])(int a, char b, char c){
+    /* body */
+}

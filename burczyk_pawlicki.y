@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #define YYSTYPE char*
+#define SIZE 1024
 char* return_type;
 char* function_name;
 char* arguments[16];  //declared arguments
@@ -9,6 +10,8 @@ char** arg_ptr;
 char* specified_arguments[16];
 char** spec_arg_ptr;
 char* argument_types[16];
+char* full_argument_definitions[16];
+char** full_arg_def_ptr;
 char** arg_t_ptr;
 char* tmp[16];
 char** tmp_ptr;
@@ -24,13 +27,15 @@ int new_style = 0;
 %%
 
 functions: function functions { 
-                                $$ = $1; 
+                                $$ = malloc(SIZE); 
+	                            strcat($$, $1); 
                                 strcat($$, " "); 
                                 strcat($$, $2); 
                                 printf("[1 %s]\n", $$);
                               }
          | function {   
-                        $$ = $1; 
+                        $$ = malloc(SIZE); 
+	                    strcat($$, $1); 
                         printf("[2 %s]\n", $$);
                     }
          ;
@@ -41,7 +46,8 @@ function: decl_specifier declarator function_rest {
                                                     validate_specified_parameters();
                                                     print_arrays();
                                                     initialize_arrays();
-                                                    $$ = $1; 
+                                                    $$ = malloc(SIZE); 
+	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
                                                     strcat($$, " "); 
@@ -55,56 +61,67 @@ function: decl_specifier declarator function_rest {
                                         validate_specified_parameters();
                                         print_arrays();
                                         initialize_arrays();
-                                        $$ = $1; 
+                                        $$ = malloc(SIZE); 
+	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
                                         printf("[4 %s]\n", $$);
                                    }
         ;
 function_rest: declaration_list body {
-                                        $$ = $1; 
+                                        $$ = malloc(SIZE); 
+	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
                                         printf("[5 %s]\n", $$);
                                      }
              | body {
-                        $$ = $1; 
+                        $$ = malloc(SIZE); 
+	                    strcat($$, $1); 
                         printf("[6 %s]\n", $$);
                     }
              ;
 decl_specifier: TYPE {
                         if(first_match){
-                            return_type = strdup($1);
+                            *return_type = 0;
+                            strcat(return_type, $1);
                         }
                         reset_tmp();
-                        arg_type = strdup($1);
-                        $$ = $1; 
+                        *arg_type = 0;
+                        strcat(arg_type, $1);
+                        $$ = malloc(SIZE); 
+	                    strcat($$, $1); 
                         printf("[7 %s]\n", $$);
                      }
               | TYPE_WITH_ID id {
                                     if(first_match){
-                                        return_type = strdup($1);
+                                        *return_type = 0;
+                                        strcat(return_type, $1);
                                         strcat(return_type, " ");
                                         strcat(return_type, $2);
                                     }
                                     reset_tmp();
-                                    arg_type = strdup($1);
-                                    strcat(return_type, " ");
+                                    *arg_type = 0;
+                                    strcat(arg_type, $1);
+                                    strcat(arg_type, " ");
                                     strcat(arg_type, $2);
-                                    $$ = $1; 
+                                    $$ = malloc(SIZE); 
+	                                strcat($$, $1); 
                                     strcat($$, " "); 
                                     strcat($$, $2); 
                                     printf("[8 %s]\n", $$);
                                 }
               ;
 declaration_list: declaration declaration_list {
-                                                    $$ = $1; 
+                                                    $$ = malloc(SIZE); 
+	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
                                                     printf("[9 %s]\n", $$);
                                                }
                 | declaration {
-                                    $$ = $1; 
+                                    $$ = malloc(SIZE); 
+	                                strcat($$, $1); 
                                     printf("[10 %s]\n", $$);
                               }
                 ;
@@ -114,7 +131,8 @@ declaration: decl_specifier declarator_list ';' {
                                                         spec_arg_ptr++;
                                                     }
                                                     reset_tmp();
-                                                    $$ = $1; 
+                                                    $$ = malloc(SIZE); 
+	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
                                                     strcat($$, " "); 
@@ -127,25 +145,28 @@ declaration: decl_specifier declarator_list ';' {
                                         spec_arg_ptr++;
                                     }
                                     reset_tmp();
-                                    $$ = $1; 
+                                    $$ = malloc(SIZE); 
+	                                strcat($$, $1); 
                                     strcat($$, " "); 
                                     strcat($$, ";");  
                                     printf("[12 %s]\n", $$);
                                 }
            ;
 declarator_list: declarator declarator_rest {
-                                                $$ = $1; 
+                                                $$ = malloc(SIZE); 
+	                                            strcat($$, $1); 
                                                 strcat($$, " "); 
                                                 strcat($$, $2); 
                                                 printf("[13 %s]\n", $$);
                                             }
                | declarator  {
-                                $$ = $1; 
+                                $$ = malloc(SIZE); 
+	                            strcat($$, $1); 
                                 printf("[14 %s]\n", $$);
                              }
                ;
 declarator_rest: ',' declarator declarator_rest {
-                                                    $$ = malloc(128);
+                                                    $$ = malloc(SIZE);
                                                     strcat($$, ","); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
@@ -154,7 +175,7 @@ declarator_rest: ',' declarator declarator_rest {
                                                     printf("[15 %s]\n", $$);
                                                 }
                | ',' declarator {
-                                    $$ = malloc(128);
+                                    $$ = malloc(SIZE);
                                     strcat($$, ",");  
                                     strcat($$, " "); 
                                     strcat($$, $2); 
@@ -162,13 +183,20 @@ declarator_rest: ',' declarator declarator_rest {
                                 }
                ;
 declarator: pointer direct_declarator {
-                                            $$ = $1; 
+                                            strcat(*full_arg_def_ptr, "*");
+                                            strcat(*full_arg_def_ptr, $2);
+                                            full_arg_def_ptr++;
+                                            $$ = malloc(SIZE); 
+	                                        strcat($$, $1); 
                                             strcat($$, " "); 
                                             strcat($$, $2); 
                                             printf("[17 %s]\n", $$);
                                       }
           | direct_declarator {
-                                    $$ = $1; 
+                                    strcat(*full_arg_def_ptr, $1);
+                                    full_arg_def_ptr++;
+                                    $$ = malloc(SIZE); 
+	                                strcat($$, $1); 
                                     printf("[18 %s]\n", $$);
                               }
           ;
@@ -182,11 +210,12 @@ direct_declarator: id {
                                 function_name = strdup($1);
                             }
                             first_match = 0;
-                            $$ = $1; 
+                            $$ = malloc(SIZE); 
+	                        strcat($$, $1); 
                             printf("[19 %s]\n", $$);
                       }
                   | '(' declarator ')' {
-                                            $$ = malloc(128);
+                                            $$ = malloc(SIZE);
                                             strcat($$, "(");
                                             strcat($$, " "); 
                                             strcat($$, $2); 
@@ -196,7 +225,8 @@ direct_declarator: id {
                                             function_name = strdup($$);
                                        }
                   | direct_declarator '[' NUM ']' {
-                                                        $$ = $1; 
+                                                        $$ = malloc(SIZE); 
+	                                                    strcat($$, $1); 
                                                         strcat($$, " "); 
                                                         strcat($$, "["); 
                                                         strcat($$, " "); 
@@ -206,7 +236,8 @@ direct_declarator: id {
                                                         printf("[21 %s]\n", $$);
                                                   }
                   | direct_declarator '[' ']' {
-                                                    $$ = $1; 
+                                                    $$ = malloc(SIZE); 
+	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
                                                     strcat($$, "["); 
                                                     strcat($$, " "); 
@@ -215,7 +246,8 @@ direct_declarator: id {
                                               }
                   | direct_declarator '(' param_list ')' {
                                                             new_style = 1;
-                                                            $$ = $1; 
+                                                            $$ = malloc(SIZE); 
+	                                                        strcat($$, $1); 
                                                             strcat($$, " "); 
                                                             strcat($$, "("); 
                                                             strcat($$, " "); 
@@ -226,7 +258,8 @@ direct_declarator: id {
                                                          }
                   | direct_declarator '(' identifier_list ')' {
                                                                 old_style = 1;
-                                                                $$ = $1; 
+                                                                $$ = malloc(SIZE); 
+	                                                            strcat($$, $1); 
                                                                 strcat($$, " "); 
                                                                 strcat($$, "("); 
                                                                 strcat($$, " "); 
@@ -236,7 +269,8 @@ direct_declarator: id {
                                                                 printf("[24 %s]\n", $$);
                                                               }
                   | direct_declarator '(' ')' {
-                                                $$ = $1; 
+                                                $$ = malloc(SIZE); 
+	                                            strcat($$, $1); 
                                                 strcat($$, " "); 
                                                 strcat($$, "("); 
                                                 strcat($$, " "); 
@@ -247,20 +281,22 @@ direct_declarator: id {
 identifier_list: id identifier_rest {
                                         *arg_ptr = strdup($1);
                                         arg_ptr++;
-                                        $$ = $1; 
+                                        $$ = malloc(SIZE); 
+	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
                                         printf("[26 %s]\n", $$);
                                     }
                | id {
-                        $$ = $1; 
+                        $$ = malloc(SIZE); 
+	                    strcat($$, $1); 
                         *arg_ptr = strdup($1);
                         arg_ptr++;
                         printf("[27 %s]\n", $$);
                     }
                ;
 identifier_rest: ',' id identifier_rest {
-                                            $$ = malloc(128);
+                                            $$ = malloc(SIZE);
                                             strcat($$, ",");
                                             strcat($$, " "); 
                                             strcat($$, $2); 
@@ -271,7 +307,7 @@ identifier_rest: ',' id identifier_rest {
                                             printf("[28 %s]\n", $$);
                                         }
                | ',' id  {
-                            $$ = malloc(128);
+                            $$ = malloc(SIZE);
                             strcat($$, ",");
                             strcat($$, " "); 
                             strcat($$, $2); 
@@ -281,18 +317,20 @@ identifier_rest: ',' id identifier_rest {
                          }
                ;
 param_list: param_declaration param_rest {
-                                            $$ = $1; 
+                                            $$ = malloc(SIZE); 
+	                                        strcat($$, $1); 
                                             strcat($$, " "); 
                                             strcat($$, $2);  
                                             printf("[30 %s]\n", $$);
                                          }
           | param_declaration {
-                                $$ = $1; 
+                                $$ = malloc(SIZE); 
+	                            strcat($$, $1); 
                                 printf("[31 %s]\n", $$);
                               }
           ;
 param_rest: ',' param_declaration param_rest {
-                                                $$ = malloc(128);
+                                                $$ = malloc(SIZE);
                                                 strcat($$, ",");
                                                 strcat($$, " "); 
                                                 strcat($$, $2); 
@@ -301,7 +339,7 @@ param_rest: ',' param_declaration param_rest {
                                                 printf("[32 %s]\n", $$);
                                              }
           | ',' param_declaration  {
-                                        $$ = malloc(128);
+                                        $$ = malloc(SIZE);
                                         strcat($$, ","); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
@@ -316,40 +354,46 @@ param_declaration: decl_specifier declarator {
                                                     arg_ptr++;
                                                 }
                                                 reset_tmp();
-                                                $$ = $1; 
+                                                $$ = malloc(SIZE); 
+	                                            strcat($$, $1); 
                                                 strcat($$, " "); 
                                                 strcat($$, $2); 
                                                 printf("[34 %s]\n", $$);
                                              }
                   | decl_specifier abstract_declarator {
                                                             //tu też kopiować kod z 34??
-                                                            $$ = $1; 
+                                                            $$ = malloc(SIZE); 
+	                                                        strcat($$, $1); 
                                                             strcat($$, " "); 
                                                             strcat($$, $2); 
                                                             printf("[35 %s]\n", $$);
                                                        }
                   | decl_specifier {
-                                        $$ = $1; 
+                                        $$ = malloc(SIZE); 
+	                                    strcat($$, $1); 
                                         printf("[36 %s]\n", $$);
                                    }
                   ;
 abstract_declarator: pointer {
-                                    $$ = $1; 
+                                    $$ = malloc(SIZE); 
+	                                strcat($$, $1); 
                                     printf("[37 %s]\n", $$);
                              }
                    | pointer direct_abstract_declarator {
-                                                            $$ = $1; 
+                                                            $$ = malloc(SIZE); 
+	                                                        strcat($$, $1); 
                                                             strcat($$, " "); 
                                                             strcat($$, $2); 
                                                             printf("[38 %s]\n", $$);
                                                         }
                    | direct_abstract_declarator {
-                                                    $$ = $1; 
+                                                    $$ = malloc(SIZE); 
+	                                                strcat($$, $1); 
                                                     printf("[39 %s]\n", $$);
                                                 }
                    ;
 direct_abstract_declarator: '(' abstract_declarator ')' {
-                                                            $$ = malloc(128);
+                                                            $$ = malloc(SIZE);
                                                             strcat($$, "(");
                                                             strcat($$, " "); 
                                                             strcat($$, $2); 
@@ -358,7 +402,8 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                             printf("[40 %s]\n", $$);
                                                         }
                           | direct_abstract_declarator '[' NUM ']' {
-                                                                    $$ = $1; 
+                                                                    $$ = malloc(SIZE); 
+	                                                                strcat($$, $1); 
                                                                     strcat($$, " "); 
                                                                     strcat($$, "["); 
                                                                     strcat($$, " "); 
@@ -368,7 +413,8 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                                     printf("[41 %s]\n", $$);
                                                                    }
                           | direct_abstract_declarator '[' ']' {
-                                                                    $$ = $1; 
+                                                                    $$ = malloc(SIZE); 
+	                                                                strcat($$, $1); 
                                                                     strcat($$, " "); 
                                                                     strcat($$, "["); 
                                                                     strcat($$, " "); 
@@ -376,7 +422,7 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                                     printf("[42 %s]\n", $$);
                                                                }
                           | '[' NUM ']' {
-                                            $$ = malloc(128);
+                                            $$ = malloc(SIZE);
                                             strcat($$, "["); 
                                             strcat($$, " "); 
                                             strcat($$, $2); 
@@ -385,14 +431,15 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                             printf("[43 %s]\n", $$);
                                         }
                           | '[' ']' {
-                                        $$ = malloc(128);
+                                        $$ = malloc(SIZE);
                                         strcat($$, "["); 
                                         strcat($$, " "); 
                                         strcat($$, "]"); 
                                         printf("[44 %s]\n", $$);
                                     }
                           | direct_abstract_declarator '(' param_list ')' {
-                                                                            $$ = $1; 
+                                                                            $$ = malloc(SIZE); 
+	                                                                        strcat($$, $1); 
                                                                             strcat($$, " "); 
                                                                             strcat($$, "("); 
                                                                             strcat($$, " "); 
@@ -402,7 +449,8 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                                             printf("[45 %s]\n", $$);
                                                                           }
                           | direct_abstract_declarator '(' ')' {
-                                                                    $$ = $1; 
+                                                                    $$ = malloc(SIZE); 
+	                                                                strcat($$, $1); 
                                                                     strcat($$, " "); 
                                                                     strcat($$, "("); 
                                                                     strcat($$, " "); 
@@ -410,7 +458,7 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                                     printf("[46 %s]\n", $$);
                                                                }
                           | '(' param_list ')' {
-                                                    $$ = malloc(128);
+                                                    $$ = malloc(SIZE);
                                                     strcat($$, "("); 
                                                     strcat($$, " "); 
                                                     strcat($$, $2); 
@@ -419,7 +467,7 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                                     printf("[47 %s]\n", $$);
                                                }
                           | '(' ')' {
-                                        $$ = malloc(128);
+                                        $$ = malloc(SIZE);
                                         strcat($$, "("); 
                                         strcat($$, " "); 
                                         strcat($$, ")");  
@@ -427,14 +475,14 @@ direct_abstract_declarator: '(' abstract_declarator ')' {
                                     }
                           ;
 pointer: '*' pointer {
-                        $$ = malloc(128);
+                        $$ = malloc(SIZE);
                         strcat($$, "*"); 
                         strcat($$, " "); 
                         strcat($$, $2); 
                         printf("[49 %s]\n", $$);
                      }
        | '*' {
-                $$ = malloc(128);
+                $$ = malloc(SIZE);
                 strcat($$, "*"); 
                 printf("[50 %s]\n", $$);
              }
@@ -443,24 +491,32 @@ pointer: '*' pointer {
 
 int reset_tmp(){
     for(i = 0; i < 16; i++){
-        tmp[i] = malloc(128);
+        tmp[i] = malloc(SIZE);
     }
     tmp_ptr = tmp;
 }
 
 int initialize_arrays(){
+    old_style = 0;
+    new_style = 0;
+    first_match = 1;
+    full_arg_def_ptr = full_argument_definitions;
     arg_ptr = arguments;
     arg_t_ptr = argument_types;
     spec_arg_ptr = specified_arguments;
-    arg_type = malloc(128);
+    arg_type = malloc(SIZE);
+    function_name = malloc(SIZE);
+    return_type = malloc(SIZE);
     for(i = 0; i < 16; i++){
-        arguments[i] = malloc(128);
-        specified_arguments[i] = malloc(128);
-        argument_types[i] = malloc(128);
+        arguments[i] = malloc(SIZE);
+        specified_arguments[i] = malloc(SIZE);
+        argument_types[i] = malloc(SIZE);
+        full_argument_definitions[i] = malloc(SIZE);
     }
 }
 
 int validate_declared_parameters(){
+    int success = 1;
     int i;
     int j;
     int found;
@@ -474,12 +530,15 @@ int validate_declared_parameters(){
             }
             if(found == 0){
                 printf("Zadeklarowany parametr nie został wyspecyfikowany: %s\n", arguments[i]);
+                success = 0;
             }
         }
     }
+    return success;
 }
 
 int validate_specified_parameters(){
+    int success = 1;
     int i;
     int j;
     int found;
@@ -492,10 +551,12 @@ int validate_specified_parameters(){
                 }
             }
             if(found == 0){
-                printf("Wyspecyfikowany parametr nie został zadeklarowany: %s\n", specified_arguments[i]);
+                printf("\nWyspecyfikowany parametr nie został zadeklarowany: %s\n", specified_arguments[i]);
+                success = 0;
             }
         }
     }
+    return success;
 }
 
 int print_arrays(){
@@ -525,17 +586,26 @@ int print_arrays(){
             printf("%s\n", argument_types[i]);
         }
     }
+    printf("\nPełne definicje parametrów:\n");
+    for(i = 0; i < 16; i++){
+        if(*full_argument_definitions[i] != 0){
+            printf("%s\n", full_argument_definitions[i]);
+        }
+    }
     printf("\n");
 }
 
 int check_repetitions(char** arguments){
+    int success = 1;
     for(i = 0; i < 16; i++){
         for(j = i + 1; j < 16; j++){
             if(*arguments[i] != 0 && *arguments[j] != 0 && strcmp(arguments[i], arguments[j]) == 0){
                 printf("\nNastapilo powtorzenie nazwy parametru funkcji: %s\n", arguments[i]);
+                success = 0;
             }
         }
     }
+    return success;
 }
 
 int main()
