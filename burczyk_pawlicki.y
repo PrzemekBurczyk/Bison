@@ -15,6 +15,8 @@ char** tmp_ptr;
 char* arg_type;
 int first_match = 1;
 int i,j;
+int old_style = 0;
+int new_style = 0;
 %}
 
 %token NUM body id TYPE TYPE_WITH_ID
@@ -33,7 +35,10 @@ functions: function functions {
                     }
          ;
 function: decl_specifier declarator function_rest { 
-                                                    check_repetitions();
+                                                    check_repetitions(arguments);
+                                                    check_repetitions(specified_arguments);
+                                                    validate_declared_parameters();
+                                                    validate_specified_parameters();
                                                     print_arrays();
                                                     initialize_arrays();
                                                     $$ = $1; 
@@ -44,7 +49,10 @@ function: decl_specifier declarator function_rest {
                                                     printf("[3 %s]\n", $$);
                                                   }
         | declarator function_rest { 
-                                        check_repetitions();
+                                        check_repetitions(arguments);
+                                        check_repetitions(specified_arguments);
+                                        validate_declared_parameters();
+                                        validate_specified_parameters();
                                         print_arrays();
                                         initialize_arrays();
                                         $$ = $1; 
@@ -65,14 +73,23 @@ function_rest: declaration_list body {
                     }
              ;
 decl_specifier: TYPE {
+                        if(first_match){
+                            return_type = strdup($1);
+                        }
                         reset_tmp();
                         arg_type = strdup($1);
                         $$ = $1; 
                         printf("[7 %s]\n", $$);
                      }
               | TYPE_WITH_ID id {
+                                    if(first_match){
+                                        return_type = strdup($1);
+                                        strcat(return_type, " ");
+                                        strcat(return_type, $2);
+                                    }
                                     reset_tmp();
                                     arg_type = strdup($1);
+                                    strcat(return_type, " ");
                                     strcat(arg_type, $2);
                                     $$ = $1; 
                                     strcat($$, " "); 
@@ -161,6 +178,8 @@ direct_declarator: id {
                                 arg_t_ptr++;
                                 *tmp_ptr = strdup($1);
                                 tmp_ptr++;
+                            } else {
+                                function_name = strdup($1);
                             }
                             first_match = 0;
                             $$ = $1; 
@@ -174,6 +193,7 @@ direct_declarator: id {
                                             strcat($$, " "); 
                                             strcat($$, ")"); 
                                             printf("[20 %s]\n", $$);
+                                            function_name = strdup($$);
                                        }
                   | direct_declarator '[' NUM ']' {
                                                         $$ = $1; 
@@ -194,6 +214,7 @@ direct_declarator: id {
                                                     printf("[22 %s]\n", $$);
                                               }
                   | direct_declarator '(' param_list ')' {
+                                                            new_style = 1;
                                                             $$ = $1; 
                                                             strcat($$, " "); 
                                                             strcat($$, "("); 
@@ -204,6 +225,7 @@ direct_declarator: id {
                                                             printf("[23 %s]\n", $$);
                                                          }
                   | direct_declarator '(' identifier_list ')' {
+                                                                old_style = 1;
                                                                 $$ = $1; 
                                                                 strcat($$, " "); 
                                                                 strcat($$, "("); 
@@ -290,6 +312,8 @@ param_declaration: decl_specifier declarator {
                                                 for(i = 0; *tmp[i] != 0 && i < 16; i++){
                                                     *spec_arg_ptr = strdup(tmp[i]);
                                                     spec_arg_ptr++;
+                                                    *arg_ptr = strdup(tmp[i]);
+                                                    arg_ptr++;
                                                 }
                                                 reset_tmp();
                                                 $$ = $1; 
@@ -436,7 +460,53 @@ int initialize_arrays(){
     }
 }
 
+int validate_declared_parameters(){
+    int i;
+    int j;
+    int found;
+    for(i = 0; i < 16; i++){
+        if(*arguments[i] != 0){
+            found = 0;
+            for(j = 0; j < 16; j++){
+                if(*specified_arguments[j] != 0 && strcmp(arguments[i], specified_arguments[j]) == 0){
+                    found = 1;
+                }
+            }
+            if(found == 0){
+                printf("Zadeklarowany parametr nie został wyspecyfikowany: %s\n", arguments[i]);
+            }
+        }
+    }
+}
+
+int validate_specified_parameters(){
+    int i;
+    int j;
+    int found;
+    for(i = 0; i < 16; i++){
+        if(*specified_arguments[i] != 0){
+            found = 0;
+            for(j = 0; j < 16; j++){
+                if(*arguments[j] != 0 && strcmp(specified_arguments[i], arguments[j]) == 0){
+                    found = 1;
+                }
+            }
+            if(found == 0){
+                printf("Wyspecyfikowany parametr nie został zadeklarowany: %s\n", specified_arguments[i]);
+            }
+        }
+    }
+}
+
 int print_arrays(){
+    if(old_style == 1){
+        printf("\nFunkcja w starym stylu\n");
+    }
+    if(new_style == 1){
+        printf("\nFunkcja w nowym stylu\n");
+    }
+    printf("\nTyp zwracany: %s\n", return_type);
+    printf("\nNagłówek/nazwa funkcji: %s\n", function_name);
     printf("\nZadeklarowane parametry funkcji:\n");
     for(i = 0; i < 16; i++){
         if(*arguments[i] != 0){
@@ -458,7 +528,7 @@ int print_arrays(){
     printf("\n");
 }
 
-int check_repetitions(){
+int check_repetitions(char** arguments){
     for(i = 0; i < 16; i++){
         for(j = i + 1; j < 16; j++){
             if(*arguments[i] != 0 && *arguments[j] != 0 && strcmp(arguments[i], arguments[j]) == 0){
