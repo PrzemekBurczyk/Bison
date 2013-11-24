@@ -1,3 +1,5 @@
+all: burczyk_pawlicki
+
 burczyk_pawlicki: burczyk_pawlicki.tab.c lex.yy.c 
 	gcc -o burczyk_pawlicki lex.yy.c burczyk_pawlicki.tab.c
 

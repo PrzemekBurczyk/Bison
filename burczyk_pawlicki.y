@@ -18,10 +18,14 @@ char** arg_t_ptr;
 char* tmp[16];
 char** tmp_ptr;
 char* arg_type;
+char* body_str;
+char* output;
 int first_match = 1;
 int i,j;
 int old_style = 0;
 int new_style = 0;
+int param_list_occured = 0;
+int declaration_list_occured = 0;
 %}
 
 %token NUM body id TYPE TYPE_WITH_ID
@@ -47,6 +51,7 @@ function: decl_specifier declarator function_rest {
                                                     validate_declared_parameters();
                                                     validate_specified_parameters();
                                                     print_arrays();
+                                                    print_output();
                                                     initialize_arrays();
                                                     $$ = malloc(SIZE); 
 	                                                strcat($$, $1); 
@@ -62,6 +67,7 @@ function: decl_specifier declarator function_rest {
                                         validate_declared_parameters();
                                         validate_specified_parameters();
                                         print_arrays();
+                                        print_output();
                                         initialize_arrays();
                                         $$ = malloc(SIZE); 
 	                                    strcat($$, $1); 
@@ -69,10 +75,11 @@ function: decl_specifier declarator function_rest {
                                         strcat($$, $2); 
                                         printf("[4 %s]\n", $$);
                                    }
-        | error ';' {yyerrok;}
         ;
 function_rest: declaration_list body {
+                                        declaration_list_occured = 1;
                                         $$ = malloc(SIZE); 
+                                        strcat(body_str, $2);
 	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
@@ -80,6 +87,7 @@ function_rest: declaration_list body {
                                      }
              | body {
                         $$ = malloc(SIZE); 
+                        strcat(body_str, $1);
 	                    strcat($$, $1); 
                         printf("[6 %s]\n", $$);
                     }
@@ -260,6 +268,7 @@ direct_declarator: id {
                                                     printf("[22 %s]\n", $$);
                                               }
                   | direct_declarator '(' param_list ')' {
+                                                            param_list_occured = 1;
                                                             new_style = 1;
                                                             $$ = malloc(SIZE); 
 	                                                        strcat($$, $1); 
@@ -523,10 +532,45 @@ int reset_tmp2(){
     tmp2_ptr = tmp2;
 }
 
+int print_output(){
+    printf("\n*****************\n");
+    if(validate_arg_list_occurence() == 1 && check_repetitions(arguments) == 1 && check_repetitions(specified_arguments) == 1 && validate_declared_parameters() == 1 && validate_specified_parameters() == 1){
+        printf("%s %s(", return_type, function_name);
+        if(*full_argument_definitions[0] == 0){
+            printf("void");
+        }
+        for(i = 0; i < 16; i++){
+            if(*full_argument_definitions[i] != 0){
+                if(i == 0){
+                    printf("%s %s", argument_types[i], full_argument_definitions[i]);
+                } else {
+                    printf(", %s %s", argument_types[i], full_argument_definitions[i]);
+                }
+            }
+        }
+        printf(")\n");
+        printf("%s", body_str);
+        printf("\n");
+    }
+    printf("\n*****************\n");
+}
+
+int validate_arg_list_occurence(){
+    int success = 1;
+    if(param_list_occured == 1 && declaration_list_occured == 1){
+        printf("\nWystapila lista deklaracji przy obecnej liście parametrów\n");
+        success = 0;
+    }
+    return success;
+}
+
 int initialize_arrays(){
     old_style = 0;
     new_style = 0;
     first_match = 1;
+    param_list_occured = 0;
+    declaration_list_occured = 0;
+    body_str = malloc(SIZE * 8);
     full_arg_def_ptr = full_argument_definitions;
     arg_ptr = arguments;
     arg_t_ptr = argument_types;
