@@ -20,6 +20,7 @@ char** tmp_ptr;
 char* arg_type;
 char* body_str;
 char* output;
+char* new_style_function;
 int first_match = 1;
 int i,j;
 int old_style = 0;
@@ -51,8 +52,6 @@ function: decl_specifier declarator function_rest {
                                                     validate_declared_parameters();
                                                     validate_specified_parameters();
                                                     print_arrays();
-                                                    print_output();
-                                                    initialize_arrays();
                                                     $$ = malloc(SIZE); 
 	                                                strcat($$, $1); 
                                                     strcat($$, " "); 
@@ -60,6 +59,12 @@ function: decl_specifier declarator function_rest {
                                                     strcat($$, " "); 
                                                     strcat($$, $3); 
                                                     printf("[3 %s]\n", $$);
+                                                    if(new_style == 1){
+                                                        print_output($$);
+                                                    } else {
+                                                        print_output();
+                                                    }
+                                                    initialize_arrays();
                                                   }
         | declarator function_rest { 
                                         check_repetitions(arguments);
@@ -67,13 +72,17 @@ function: decl_specifier declarator function_rest {
                                         validate_declared_parameters();
                                         validate_specified_parameters();
                                         print_arrays();
-                                        print_output();
-                                        initialize_arrays();
                                         $$ = malloc(SIZE); 
 	                                    strcat($$, $1); 
                                         strcat($$, " "); 
                                         strcat($$, $2); 
                                         printf("[4 %s]\n", $$);
+                                        if(new_style == 1){
+                                            print_output($$);
+                                        } else {
+                                            print_output();
+                                        }
+                                        initialize_arrays();
                                    }
         ;
 function_rest: declaration_list body {
@@ -532,25 +541,29 @@ int reset_tmp2(){
     tmp2_ptr = tmp2;
 }
 
-int print_output(){
+int print_output(char* new_style_function){
     printf("\n*****************\n");
     if(validate_arg_list_occurence() == 1 && check_repetitions(arguments) == 1 && check_repetitions(specified_arguments) == 1 && validate_declared_parameters() == 1 && validate_specified_parameters() == 1){
-        printf("%s %s(", return_type, function_name);
-        if(*full_argument_definitions[0] == 0){
-            printf("void");
-        }
-        for(i = 0; i < 16; i++){
-            if(*full_argument_definitions[i] != 0){
-                if(i == 0){
-                    printf("%s %s", argument_types[i], full_argument_definitions[i]);
-                } else {
-                    printf(", %s %s", argument_types[i], full_argument_definitions[i]);
+        if(!new_style_function){
+            printf("%s %s(", return_type, function_name);
+            if(*full_argument_definitions[0] == 0){
+                printf("void");
+            }
+            for(i = 0; i < 16; i++){
+                if(*full_argument_definitions[i] != 0){
+                    if(i == 0){
+                        printf("%s %s", argument_types[i], full_argument_definitions[i]);
+                    } else {
+                        printf(", %s %s", argument_types[i], full_argument_definitions[i]);
+                    }
                 }
             }
+            printf(")\n");
+            printf("%s", body_str);
+            printf("\n");
+        } else {
+            printf("%s\n", new_style_function);
         }
-        printf(")\n");
-        printf("%s", body_str);
-        printf("\n");
     }
     printf("\n*****************\n");
 }
@@ -571,6 +584,7 @@ int initialize_arrays(){
     param_list_occured = 0;
     declaration_list_occured = 0;
     body_str = malloc(SIZE * 8);
+    new_style_function = malloc(SIZE * 16);
     full_arg_def_ptr = full_argument_definitions;
     arg_ptr = arguments;
     arg_t_ptr = argument_types;
